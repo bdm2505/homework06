@@ -5,32 +5,13 @@ package fintech.homework06
 Опционально - разработать === для комплексных чисел с возможностью указать точность
 */
 
-trait Eq[A] {
+trait Eq[-A] {
   def equiv(o1: A, o2: A): Boolean
 }
 
 object Eq {
 
-  implicit class Comparator[T](val l: T) {
-    def ===(r: T)(implicit eq: Eq[T]): Boolean = {
-      eq.equiv(l, r)
-    }
-
-    def =~=(r: T)(implicit eq: Eq[T]): Boolean =
-      this === r
-  }
-
-  def accuracy[T](acc: T)(implicit num: Numeric[T]): Eq[T] = (e1, e2) => {
-    import num._
-    abs(e1 - e2) <= acc
-  }
-
-}
-
-object EqOps {
-  implicit val int: Eq[Int] = (o1, o2) => o1 == o2
-  implicit val double: Eq[Double] = (o1, o2) => o1 == o2
-  implicit val string: Eq[String] = (o1, o2) => o1 == o2
+  implicit val any: Eq[Any] = _ == _
 
   implicit def seq[T](implicit eq: Eq[T]): Eq[Seq[T]] = (s1, s2) => {
     if (s1.length == s2.length)
@@ -50,5 +31,19 @@ object EqOps {
     case (Some(v1: V), Some(v2: V)) => eq.equiv(v1, v2)
     case (None, None) => true
     case _ => false
+  }
+
+}
+
+object EqOps {
+  implicit class Comparator[T](val l: T) {
+
+    def =~=[U >: T](r: U)(implicit eq: Eq[U]): Boolean =
+      eq.equiv(l, r)
+  }
+
+  def accuracy[T](acc: T)(implicit num: Numeric[T]): Eq[T] = (e1, e2) => {
+    import num._
+    abs(e1 - e2) <= acc
   }
 }
